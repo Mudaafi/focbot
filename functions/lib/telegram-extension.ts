@@ -47,13 +47,18 @@ export async function processTeleMsg(message: TeleMessage) {
         var endDate = new Date()
         endDate.setUTCHours(endDate.getUTCDate() + 8)
         endDate.setUTCDate(endDate.getUTCDate() + daysToCountdown)
+        let timeToRemindSG24hrString = timeToRemindSG.toLocaleString('en-US', {
+          minimumIntegerDigits: 2,
+          useGrouping: false,
+        })
         await sendMessage(
           message.chat.id,
-          `Countdown Scheduled for everyday at ${timeToRemindSG}hrs until ${
-            endDate.getUTCDate
-          } ${endDate.toLocaleString('default', { month: 'short' })} ${
-            endDate.getFullYear
-          }`,
+          `📅 Countdown: <b>${msg}</b>\n\nCountdown Scheduled for everyday at <b>${timeToRemindSG24hrString}00hrs</b> until ${endDate.getUTCDate()} ${endDate.toLocaleString(
+            'default',
+            {
+              month: 'short',
+            },
+          )} ${endDate.getFullYear()}`,
         )
         break
       default:

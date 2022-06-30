@@ -53,8 +53,9 @@ async function processPostReq(body: any): Promise<ReturnResponse> {
       var countdownParams = body.countdown as CountdownParams
       var message = `<b>${countdownParams.daysToCountdown}</b> ${countdownParams.message}`
       if (countdownParams.daysToCountdown == 0) {
-        message = `<b>✈️✈️✈️ D-DAY!!!!</b>\n${message}`
+        message = `<b>✈️✈️✈️ D-DAY!!!!</b>\n\n<i>⏰🔔 adilah wake up!\n\n solat dulu baru boleh fly😎🛫 (dont forget paspot)</i>\n\n${message}`
       } else {
+        message = `📅 <i>Countdown</i>\n\n${message}`
         countdownParams.daysToCountdown -= 1
         await scheduleCountdown(countdownParams)
       }
