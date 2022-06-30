@@ -41,7 +41,7 @@ export async function processTeleMsg(message: TeleMessage) {
           daysToCountdown: daysToCountdown,
           timeToRemindSG: timeToRemindSG,
           teleChatId: message.chat.id,
-          message: msg || ' Days Left Until',
+          message: msg || 'Days Left Until KL Trip',
         }
         await scheduleCountdown(countdownParams)
         var endDate = new Date()
@@ -68,6 +68,7 @@ export async function processTeleError(prompt: TeleUpdate, errorMsg: Error) {
   await sendMessage(ADMIN_ID, `<b>Error encountered</b>:`)
   await sendMessage(ADMIN_ID, JSON.stringify(prompt))
   await sendMessage(ADMIN_ID, `${errorMsg.message}`)
+  console.log(JSON.stringify(errorMsg))
 }
 
 export async function processPhoto(message: TeleMessage) {
