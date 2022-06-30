@@ -31,7 +31,7 @@ export async function processTeleMsg(message: TeleMessage) {
     switch (command) {
       case '/identify':
         return sendMessage(message.from.id, `Chat ID: ${message.chat.id}`)
-      case '/schedule':
+      case '/countdown':
         var msg = _extractParameter(message.text, 0)
         var daysToCountdown = parseInt(_extractParameter(message.text, 1))
         var timeToRemindSG = parseInt(_extractParameter(message.text, 2))
@@ -55,6 +55,7 @@ export async function processTeleMsg(message: TeleMessage) {
             endDate.getFullYear
           }`,
         )
+        break
       default:
         console.log(`Error Invalid Input: ${message.text}`)
         return
@@ -68,7 +69,6 @@ export async function processTeleError(prompt: TeleUpdate, errorMsg: Error) {
   await sendMessage(ADMIN_ID, `<b>Error encountered</b>:`)
   await sendMessage(ADMIN_ID, JSON.stringify(prompt))
   await sendMessage(ADMIN_ID, `${errorMsg.message}`)
-  console.log(JSON.stringify(errorMsg))
 }
 
 export async function processPhoto(message: TeleMessage) {
@@ -99,8 +99,8 @@ function _extractCommand(textMsg: string): string | undefined {
 
 function _extractParameter(textMsg: string, parameterPos: number = 0): string {
   var indexStart = 0
-  while (parameterPos > 0) {
-    indexStart = textMsg.indexOf('[', indexStart)
+  while (parameterPos >= 0) {
+    indexStart = textMsg.indexOf('[', indexStart + 1)
     parameterPos -= 1
   }
   if (indexStart == -1)

@@ -13,7 +13,7 @@ export async function scheduleCountdown(countdown: CountdownParams) {
     endpoint: countdown.endpoint,
     verb: countdown.endpointType,
     runAt: datetimeToRun,
-    body: JSON.stringify(countdown),
+    body: JSON.stringify({ function: 'countdown', countdown: countdown }),
   })
   return job
 }
