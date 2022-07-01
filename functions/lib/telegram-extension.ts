@@ -35,6 +35,7 @@ export async function processTeleMsg(message: TeleMessage) {
         var msg = _extractParameter(message.text, 0)
         var daysToCountdown = parseInt(_extractParameter(message.text, 1))
         var timeToRemindSG = parseInt(_extractParameter(message.text, 2))
+        var hasTodaysTimePassed = new Date().getUTCHours() + 8 > timeToRemindSG
         var countdownParams: CountdownParams = {
           endpoint: process.env.COUNTDOWN_ENDPOINT,
           endpointType: 'POST',
@@ -43,7 +44,9 @@ export async function processTeleMsg(message: TeleMessage) {
           teleChatId: message.chat.id,
           message: msg || 'Days Left Until KL Trip',
         }
+        if (hasTodaysTimePassed) countdownParams.daysToCountdown -= 1
         await scheduleCountdown(countdownParams)
+
         var endDate = new Date()
         endDate.setUTCHours(endDate.getUTCDate() + 8)
         endDate.setUTCDate(endDate.getUTCDate() + daysToCountdown)
@@ -104,12 +107,13 @@ function _extractCommand(textMsg: string): string | undefined {
 
 function _extractParameter(textMsg: string, parameterPos: number = 0): string {
   var indexStart = 0
+  var parameterPosCopy = parameterPos
   while (parameterPos >= 0) {
     indexStart = textMsg.indexOf('[', indexStart + 1)
     parameterPos -= 1
   }
   if (indexStart == -1)
-    throw new Error(`Missing parameter in position ${parameterPos}`)
+    throw new Error(`Missing parameter in position ${parameterPosCopy}`)
   let indexEnd =
     textMsg.indexOf(']', indexStart) == -1
       ? textMsg.length
