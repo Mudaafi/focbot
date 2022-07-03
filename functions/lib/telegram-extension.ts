@@ -73,8 +73,16 @@ export async function processTeleMsg(message: TeleMessage) {
             'Please use this command by replying to a countdown message',
           )
         var jobId = _extractMetadata(message.reply_to_message)
-        await deleteJob(jobId)
+        try {
+          await deleteJob(jobId)
+        } catch (e) {
+          return sendMessage(
+            message.chat.id,
+            'Error deleting countdown. Try deleting using the most recent countdown reminder message.',
+          )
+        }
         return sendMessage(message.chat.id, 'Countdown Deleted')
+
       default:
         console.log(`Error Invalid Input: ${message.text}`)
         return

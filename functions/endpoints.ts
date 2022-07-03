@@ -4,7 +4,7 @@ import {
   GetQueryParams,
   ReturnResponse,
 } from './lib/endpoint-types'
-import { sendMessage } from './lib/telegram-extension'
+import { sendMessage, _embedMetadata } from './lib/telegram-extension'
 import { scheduleCountdown } from './lib/repeater-interface'
 
 const ADMIN_ID = process.env.ADMIN_ID || ''
@@ -55,9 +55,10 @@ async function processPostReq(body: any): Promise<ReturnResponse> {
       if (countdownParams.daysToCountdown == 0) {
         message = `<b>✈️✈️✈️ D-DAY!!!!</b>\n\n<i>⏰🔔 adilah wake up!\n\n solat dulu baru boleh fly😎🛫 (dont forget paspot)</i>\n\n${message}`
       } else {
-        message = `📅 <i>Countdown</i>\n\n${message}`
         countdownParams.daysToCountdown -= 1
-        await scheduleCountdown(countdownParams)
+        let job = await scheduleCountdown(countdownParams)
+        message = `📅 <i>Countdown</i>\n\n${message}`
+        message = _embedMetadata(job.name, message)
       }
       await sendMessage(countdownParams.teleChatId, message)
       return {
