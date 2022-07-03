@@ -1,4 +1,7 @@
-import { sendMessage as sendMessageApi } from './telegram-inteface'
+import {
+  convertToHTML,
+  sendMessage as sendMessageApi,
+} from './telegram-inteface'
 import {
   TeleCallbackQuery,
   TeleInlineKeyboard,
@@ -69,7 +72,7 @@ export async function processTeleMsg(message: TeleMessage) {
             message.chat.id,
             'Please use this command by replying to a countdown message',
           )
-        var jobId = _extractMetadata(message.reply_to_message.text!)
+        var jobId = _extractMetadata(message.reply_to_message)
         await deleteJob(jobId)
         return sendMessage(message.chat.id, 'Countdown Deleted')
       default:
@@ -136,7 +139,10 @@ export function _embedMetadata(metadata: any, text: string): string {
   return text
 }
 
-export function _extractMetadata(htmlText: string): any {
+export function _extractMetadata(teleMsg: TeleMessage): any {
+  if (teleMsg.text == undefined)
+    throw new Error('Cannot find Tele Message text')
+  var htmlText = convertToHTML(teleMsg.text, teleMsg.entities)
   var res = htmlText.split('tg://metadata/')[1]
   if (!res) return null
   res = res.split('/end')[0]
