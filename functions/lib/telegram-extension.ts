@@ -7,7 +7,7 @@ import {
   TeleUpdate,
 } from './tele-types'
 import { CountdownParams } from './endpoint-types'
-import { scheduleCountdown } from './repeater-interface'
+import { deleteJob, scheduleCountdown } from './repeater-interface'
 
 const TELE_BOT_KEY = process.env.TELE_BOT_KEY || ''
 const ADMIN_ID = process.env.ADMIN_ID || ''
@@ -45,7 +45,7 @@ export async function processTeleMsg(message: TeleMessage) {
           message: msg || 'Days Left Until KL Trip',
         }
         if (hasTodaysTimePassed) countdownParams.daysToCountdown -= 1
-        await scheduleCountdown(countdownParams)
+        var scheduledJob = await scheduleCountdown(countdownParams)
 
         var endDate = new Date()
         endDate.setUTCHours(endDate.getUTCDate() + 8)
@@ -54,16 +54,24 @@ export async function processTeleMsg(message: TeleMessage) {
           minimumIntegerDigits: 2,
           useGrouping: false,
         })
-        await sendMessage(
-          message.chat.id,
-          `📅 Countdown: <b>${msg}</b>\n\nCountdown Scheduled for everyday at <b>${timeToRemindSG24hrString}00hrs</b> until ${endDate.getUTCDate()} ${endDate.toLocaleString(
-            'default',
-            {
-              month: 'short',
-            },
-          )} ${endDate.getFullYear()}`,
-        )
+        var countdownMsg = `📅 Countdown: <b>${msg}</b>\n\nCountdown Scheduled for everyday at <b>${timeToRemindSG24hrString}00hrs</b> until ${endDate.getUTCDate()} ${endDate.toLocaleString(
+          'default',
+          {
+            month: 'short',
+          },
+        )} ${endDate.getFullYear()}`
+        countdownMsg = _embedMetadata(scheduledJob.name, countdownMsg)
+        await sendMessage(message.chat.id, countdownMsg)
         break
+      case '/delete':
+        if (message.reply_to_message == undefined)
+          return sendMessage(
+            message.chat.id,
+            'Please use this command by replying to a countdown message',
+          )
+        var jobId = _extractMetadata(message.reply_to_message.text!)
+        await deleteJob(jobId)
+        return sendMessage(message.chat.id, 'Countdown Deleted')
       default:
         console.log(`Error Invalid Input: ${message.text}`)
         return
@@ -121,9 +129,35 @@ function _extractParameter(textMsg: string, parameterPos: number = 0): string {
   return textMsg.substring(indexStart + 1, indexEnd)
 }
 
-function embedMetadata(metadata: any, text: string) {
-  text += `<a href='${JSON.stringify(metadata)}'></a>`
+export function _embedMetadata(metadata: any, text: string): string {
+  text += `<a href="tg://metadata/${JSON.stringify(metadata)
+    .split('"')
+    .join('`')}/end">\u200b</a>`
   return text
+}
+
+export function _extractMetadata(htmlText: string): any {
+  var res = htmlText.split('tg://metadata/')[1]
+  if (!res) return null
+  res = res.split('/end')[0]
+  res = res.split('`').join('"')
+  let obj = JSON.parse(res.split('/end')[0])
+  // Telegram replaces whitespace in links to %20
+  if (typeof obj == 'string') {
+    return obj
+  }
+  Object.keys(obj).forEach((key) => {
+    let value = obj[key]
+    if (typeof value == 'string') {
+      obj[key] = value.replace(/%20/g, ' ')
+    } else if (typeof value == 'object') {
+      if (Array.isArray(value))
+        obj[key] = value.map((elem) =>
+          typeof elem == 'string' ? elem.replace(/%20/g, ' ') : elem,
+        )
+    }
+  })
+  return obj
 }
 
 // https://stackoverflow.com/questions/196972/convert-string-to-title-case-with-javascript

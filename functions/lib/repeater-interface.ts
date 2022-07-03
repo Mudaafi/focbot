@@ -17,3 +17,9 @@ export async function scheduleCountdown(countdown: CountdownParams) {
   })
   return job
 }
+
+export async function deleteJob(jobId: string) {
+  const repeater = new Repeater(process.env.REPEATER_TOKEN)
+  let job = await repeater.job(jobId)
+  return job.delete()
+}
