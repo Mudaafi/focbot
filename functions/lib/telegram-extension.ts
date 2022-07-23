@@ -11,6 +11,7 @@ import {
 } from './tele-types'
 import { CountdownParams } from './endpoint-types'
 import { deleteJob, scheduleCountdown } from './repeater-interface'
+import { getData } from './gsheet-interface'
 
 const TELE_BOT_KEY = process.env.TELE_BOT_KEY || ''
 const ADMIN_ID = process.env.ADMIN_ID || ''
@@ -40,7 +41,7 @@ export async function processTeleMsg(message: TeleMessage) {
         var timeToRemindSG = parseInt(_extractParameter(message.text, 2))
         var hasTodaysTimePassed = new Date().getUTCHours() + 8 > timeToRemindSG
         var countdownParams: CountdownParams = {
-          endpoint: process.env.COUNTDOWN_ENDPOINT,
+          endpoint: process.env.COUNTDOWN_ENDPOINT || '',
           endpointType: 'POST',
           daysToCountdown: daysToCountdown,
           timeToRemindSG: timeToRemindSG,
@@ -82,7 +83,13 @@ export async function processTeleMsg(message: TeleMessage) {
           )
         }
         return sendMessage(message.chat.id, 'Countdown Deleted')
-
+      case '/pot':
+        let pot = await getData(
+          'C2',
+          '1r4aurUdqcFqtMwLH5bHRLOqO1ZCH-dheKlyo3-HUCno',
+          'Irish Pot',
+        )
+        return sendMessage(message.chat.id, `💰 Pot contains: <b>${pot}</b>`)
       default:
         console.log(`Error Invalid Input: ${message.text}`)
         return
